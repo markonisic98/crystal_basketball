@@ -1,6 +1,6 @@
 # Crystal Basketball
 
-Crystal Basketball is a project dedicated to predicting the outcome of an NBA game using Machine Learning. While the program's main focus is to predict the winner of a specific game, it can also predict the point spread and total points of a game. Currently, this program is focused around the prediction of regular season games. 
+Crystal Basketball is a project dedicated to predicting the outcome of an NBA game using machine learning techniques. While the program's main focus is to predict the winner of a specific game, it can also predict the point spread and total points of a game. Currently, this program is focused around the prediction of regular season games. 
 
 The overarching goal of this project is to see if we can develop sophisticated models that can outperform bookmakers and produce a positive return betting in the market based on the models' – and eventually **one** consolidated model's – predictions. 
 
