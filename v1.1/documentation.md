@@ -5,6 +5,11 @@
 ## Table of Contents
 <details><summary>[backtesting](#backtesting)</summary>
 
+ * [benchmarks](#backtesting.benchmarks)
+  * []()
+  * []()
+  * []()
+  * []()
  * [betting](#backtesting.betting)
   * [RF](#backtesting.betting.RF)
      * [create\_betting\_df](#create_betting_df)
