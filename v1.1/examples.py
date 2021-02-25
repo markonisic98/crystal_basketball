@@ -9,12 +9,51 @@ dataset_V1 = multi_season_final_dataset(2016, 2020, [5,10], 1, 82)
 # Place the dataset in the folder for quicker pulling of data in future
 dataset_V1.to_csv("dataset_V1.csv")
 
+# Load the dataset from the folder
+import pandas as pd
+dataset_V1 = pd.read_csv("dataset_V1.csv")
+
+# checking prediction benchmarks to compare to 
+# fivethirtyeight predictions
+from backtesting import benchmarks
+from dataCollection import scrapers
+
+# enter the filepath to your Google Chrome app, and your chromedriver path, respectively
+chrome_app_filepath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+binary_filepath = "/Users/markonisic/opt/WebDriver/bin/chromedriver"
+
+# Fivethirtyeight predictions include playoffs, whereas scraped market predictions don't
+#----2017/2018 - 2020/2021 SEASON-----
+season_end_years = [2018, 2019, 2020, 2021] # all the available fivethirtyeight season predictions
+for year in season_end_years:
+    print(f"-----{year-1}/{year} SEASON------")
+    scraper_results = scrapers.fivethirtyeight_game_scraper(binary_filepath, chrome_app_filepath, year)
+    benchmarks.fivethirtyeight_winner_and_spread_accuracy(scraper_results)
+    
+# market predictions 
+from backtesting import benchmarks
+from dataCollection import scrapers
+#----OVERALL DATASET PREDICTIONS-----
+print("----2015/2016 through 2019/2020 SEASON----")
+benchmarks.market_winner_accuracy(dataset_V1)
+benchmarks.market_over_under_accuracy(dataset_V1)
+benchmarks.market_spread_accuracy(dataset_V1)
+
+#-----YEARLY PREDICTIONS--------
+season_end_years = [2016, 2017, 2018, 2019, 2020]
+for year in season_end_years: # 5 seasons in this dataset
+    print(f"-----{year-1}/{year} SEASON------") # COVID Season different schedule
+    temp_set = dataset_V1[(dataset_V1["DATE"] < f"{year}-10-01") & 
+                          (dataset_V1["DATE"] > f"{year-1}-10-01")]
+    benchmarks.market_winner_accuracy(temp_set)
+    benchmarks.market_over_under_accuracy(temp_set)
+    benchmarks.market_spread_accuracy(temp_set)
+
 # Load the dataset from the folder in a future session
 from dataCollection.builder import create_final_dataset
-import pandas as pd
 from datetime import datetime
 from calendar import month_abbr
-dataset_V1 = pd.read_csv("dataset_V1.csv")
+# Using only games after the 10th of the season, to let rolling averages become useful
 dataset_V1 = dataset_V1[dataset_V1['GAME'] >= 10]
 # Predicting past games from this season
 this_season = create_final_dataset(2021, [5,10], first_game_to_collect=10, add_upcoming=True)

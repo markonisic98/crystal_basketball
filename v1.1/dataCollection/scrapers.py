@@ -3,6 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
+from selenium import webdriver
+import time
 from dataCollection.helpers import create_game_ID, multiple_moving_averages
 from datetime import datetime
 from calendar import month_abbr
@@ -242,3 +244,125 @@ def get_team_game_log(team, season_end_year, moving_avg_list, add_upcoming=False
     df_final = multiple_moving_averages(df_final, moving_avg_list)
       
     return df_final
+
+# only has predictions for 2017-18 season through to current season (season_end_year={2018,..,2021})
+# currently only supports scraping completed games, but this can be easily
+# changed to support upcoming games if necessary
+def fivethirtyeight_game_scraper(binary_filepath, chrome_app_filepath, season_end_year):
+    if season_end_year == 2021 or season_end_year == 2020:
+        advanced_pred_name = "RAPTOR"
+        basic_pred_name = "CARMELO"
+    elif season_end_year == 2019:
+        advanced_pred_name = "CARMELO"
+        basic_pred_name = "ELO"
+    elif season_end_year == 2018:
+        advanced_pred_name = "CARMELO"
+        basic_pred_name = "EMPTY" # only one prediction method this year
+    else:
+        print("There are no predictions for this year. Choose year from 2018-current")
+        return
+    
+    options = webdriver.ChromeOptions()
+    options.binary_location = chrome_app_filepath
+    driver = webdriver.Chrome(binary_filepath, options=options)
+    driver.get(f'https://projects.fivethirtyeight.com/{season_end_year}-nba-predictions/games/')
+    
+    if season_end_year == 2018: # only one prediction method, need to iterate twice for other years
+        completed_games_var_2018 = "completed-day"
+        game_days_var_2018 = "day.complete.shown"
+        iterations = 1
+    else:
+        completed_games_var = "completed-days"
+        game_days_var = "day"
+        iterations = 2
+    
+    for i in range(iterations):
+        time.sleep(5)
+        match_date_list = []
+        match_home_team_list = []
+        match_away_team_list = []
+        match_home_team_pts_list = []
+        match_away_team_pts_list = []
+        match_home_prob_win_list = []
+        match_away_prob_win_list = []
+        match_home_spread_list = []
+        if i == 1: # click on the more basic predictions
+            if season_end_year == 2019:
+                dropdown = driver.find_element_by_class_name("select")
+                # different click because of some validation stuff
+                driver.execute_script("arguments[0].click();", dropdown)    
+            basic_radio = driver.find_element_by_id("r2")
+            driver.execute_script("arguments[0].click();", basic_radio) 
+            #expand = driver.find_element_by_id("js-complete-expander")
+            #driver.execute_script("arguments[0].click();", expand)
+            time.sleep(10) # produces stale request occasionally if you do not wait. 10 sec is arbitrary
+        else:
+            expand = driver.find_element_by_id("js-complete-expander")
+            expand.click()
+            time.sleep(10)
+        
+        if season_end_year == 2018: # only one prediction method, need to iterate twice for other years
+            completed_games = driver.find_element_by_class_name(completed_games_var_2018)
+            game_days = completed_games.find_elements_by_class_name(game_days_var_2018)
+        else:
+            completed_games = driver.find_element_by_id(completed_games_var)
+            game_days = completed_games.find_elements_by_class_name(game_days_var)
+        
+        for game_day in game_days:
+            game_date = game_day.find_element_by_class_name("h3")
+            game_info = game_day.find_elements_by_class_name("ie10up")
+            for game in game_info:
+                match_date_list.append(game_date.text)
+                if season_end_year == 2018: # different code
+                    teams = game.find_elements_by_css_selector('tr') # these next two lines are just for the 2017-18 (2018) season
+                    teams = [teams[1],teams[2]]
+                else:
+                    teams = game.find_elements_by_css_selector('tr.tr.team')
+                for j, team in enumerate(teams):
+                    team_values = team.text.split()
+                    # Trail Blazers only two-named team
+                    if team_values[0] == 'Trail':
+                        team_values.pop(1)
+                        team_values[0] == 'Trail Blazers'
+                    # PK (push) spread
+                    if team_values[1] == 'PK':
+                        team_values[1] = 0
+                    if j==0:
+                        # away team
+                        match_away_team_list.append(team_values[0])
+                        if len(team_values) == 4:
+                            match_home_spread_list.append(-float(team_values[1]))
+                            match_away_prob_win_list.append(float(team_values[2].rstrip("%"))/100)
+                            match_away_team_pts_list.append(int(team_values[3]))
+                        else:
+                            match_away_prob_win_list.append(float(team_values[1].rstrip("%"))/100)
+                            match_away_team_pts_list.append(int(team_values[2]))
+                    else:
+                        # home team
+                        match_home_team_list.append(team_values[0])
+                        # spread is displayed on team favorite; differing length lists
+                        if len(team_values) == 4:
+                            match_home_spread_list.append(float(team_values[1]))
+                            match_home_prob_win_list.append(float(team_values[2].rstrip("%"))/100)
+                            match_home_team_pts_list.append(int(team_values[3]))
+                        else:
+                            match_home_prob_win_list.append(float(team_values[1].rstrip("%"))/100)
+                            match_home_team_pts_list.append(int(team_values[2]))
+                            
+        
+        if i == 0:
+            advanced_home_win_prob = match_home_prob_win_list
+            advanced_away_win_prob = match_away_prob_win_list
+            advanced_home_spread_pred = match_home_spread_list
+            if season_end_year == 2018: # empty list for "basic" predictions for 2018 season - only one option
+                basic_home_win_prob = []
+                basic_away_win_prob = []
+                basic_home_spread_pred = []
+        else:
+            basic_home_win_prob = match_home_prob_win_list
+            basic_away_win_prob = match_away_prob_win_list
+            basic_home_spread_pred = match_home_spread_list
+    driver.quit()   
+    return (match_date_list, advanced_pred_name, basic_pred_name, advanced_home_win_prob, advanced_away_win_prob,
+            advanced_home_spread_pred, basic_home_win_prob, basic_away_win_prob, basic_home_spread_pred,
+           match_home_team_list, match_away_team_list, match_home_team_pts_list, match_away_team_pts_list)
