@@ -6,10 +6,10 @@
 <details><summary>[backtesting](#backtesting)</summary>
 
  * [benchmarks](#backtesting.benchmarks)
-  * []()
-  * []()
-  * []()
-  * []()
+  * [market\_winner\_accuracy](#market_winner_accuracy)
+  * [market\_over\_under_accuracy](#market_over_under_accuracy)
+  * [market\_spread\_accuracy](#market_spread_accuracy)
+  * [fivethirtyeight\_winner\_and\_spread\_accuracy](#fivethirtyeight_winner_and_spread_accuracy)
  * [betting](#backtesting.betting)
   * [RF](#backtesting.betting.RF)
      * [create\_betting\_df](#create_betting_df)
@@ -50,6 +50,7 @@
   * [multiple\_moving\_averages](#multiple_moving_averages)
   * [win\_percentage\_moving\_avg](#win_percentage_moving_avg)
  * [scrapers](#dataCollection.scrapers)
+  * [fivethirtyeight\_game\_scraper](#fivethirtyeight_game_scraper)
   * [get\_game\_lineup](#get_game_lineup)
   * [get\_game\_odds](#get_game_odds)
   * [get\_team\_game\_log](#get_team_game_log)
@@ -75,6 +76,73 @@
 
 
 ## <a name="backtesting"><span style="color:#000000">backtesting</span></a>
+
+> ## <a name="backtesting.benchmarks"><span style="color:#404040"> benchmarks</span></a>
+
+> #### <a name = "fivethirtyeight_winner_and_spread_accuracy"> <span style="color:#0052cc"> fivethirtyeight\_winner\_and\_spread\_accuracy </span></a> 
+
+> ```Python
+fivethirtyeight_winner_and_spread_accuracy(fivethirtyeight_scraper_results)
+```
+
+><span style="color:#000000">measures the prediction accuracy of the popular statistics website [fivethirtyeight](https://fivethirtyeight.com). Measures their accuracy in predicting winners and spreads, using their various prediction models from 2017/18 to the current season. Prints the advanced model used and the basic model used, if two different models are used in the same year. The models are RAPTOR, CARMELO, and ELO. Prints the accuracy of each of these models in the given year with respect to winners, and with spreads.</span>
+  
+> <span style="color:#000000">Does not return anything </span>
+  
+> <span style="color:#000000">Parameters: </span>  
+
+> * <span style="color:#000000">**fivethirtyeight\_scraper\_results** (multiple lists): very specific set of lists returned from the [fivethirtyeight\_game\_scraper](#fivethirtyeight_game_scraper).
+
+> #### <a name = "market_over_under_accuracy"> <span style="color:#0052cc"> market\_over\_under\_accuracy </span></a> 
+
+> ```Python
+market_over_under_accuracy(df, total_pts_column_name="TOTAL_PTS", over_under_column_name="OVER_UNDER")
+```
+
+><span style="color:#000000">measures the market (bookmakers/Vegas) accuracy in predicting the over/under. This is measured by taking the percentage of time overs hit, unders hit or there is a push. It also measures mean error between over/under and actual total points in a game, in absolute form, squared form, and root of squared error form. Prints the percentage of time overs hit, unders hit, pushes occur, and the various mean error stats. </span>
+  
+> <span style="color:#000000">Does not return anything </span>
+  
+> <span style="color:#000000">Parameters: </span>  
+
+> * <span style="color:#000000">**df** (pandas dataframe): a cleaned dataframe, created using the [builder](#dataCollection.builder) module. </span>
+* <span style="color:#000000">**total\_pts\_column\_name** (string): Default = "TOTAL_PTS". The column name in the dataframe for the actual total points in a game.</span>
+* <span style="color:#000000">**over\_under\_column\_name** (string): Default = "OVER_UNDER". The column name in the dataframe for the market over/under for a game.</span>
+
+> #### <a name = "market_spread_accuracy"> <span style="color:#0052cc"> market\_spread\_accuracy </span></a> 
+
+> ```Python
+market_spread_accuracy(df, actual_home_spread_column_name="HOME_TEAM_SPREAD", market_home_spread_column_name="IMPLIED_HOME_SPREAD")
+```
+
+><span style="color:#000000">measures the market (bookmakers/Vegas) accuracy in predicting the (points) spread for a game. This is measured by taking the percentage of time spread covers, spread goes against, or there's a push. It also measures mean error between spread prediction and actual spread in absolute form, squared form, and root of squared error form. Prints the percentage of time spread covers, spread goes against, pushes occur, and the various mean error stats. </span>
+  
+> <span style="color:#000000">Does not return anything </span>
+  
+> <span style="color:#000000">Parameters: </span>  
+
+> * <span style="color:#000000">**df** (pandas dataframe): a cleaned dataframe, created using the [builder](#dataCollection.builder) module. </span>
+* <span style="color:#000000">**actual\_home\_spread\_column\_name** (string): Default = "HOME_TEAM_SPREAD". The column name in the dataframe for the actual points spread in a game.</span>
+* <span style="color:#000000">**market\_home\_spread\_column\_name** (string): Default = "IMPLIED_HOME_SPREAD". The column name in the dataframe for the market spread for a game.</span>
+
+> #### <a name = "market_winner_accuracy"> <span style="color:#0052cc"> market\_winner\_accuracy </span></a> 
+
+> ```Python
+market_winner_accuracy(df, home_odds_column_name="HOME_ODDS", away_odds_column_name="AWAY_ODDS",
+                          win_loss_column_name="HOME_TEAM_WIN/LOSS")
+```
+
+><span style="color:#000000">measures the market (bookmakers/Vegas) accuracy in predicting a winner. This is measured by taking the percentage of time the odds-favorite team is the winner. Prints the accuracy percentage of home games, away games, and overall prediction accuracy. </span>
+  
+> <span style="color:#000000">Does not return anything </span>
+  
+> <span style="color:#000000">Parameters: </span>  
+
+> * <span style="color:#000000">**df** (pandas dataframe): a cleaned dataframe, created using the [builder](#dataCollection.builder) module. </span>
+* <span style="color:#000000">**home\_odds\_column\_name** (string): Default = "HOME_ODDS". The column name in the dataframe for the odds of the home team winning.</span>
+* <span style="color:#000000">**away\_odds\_column\_name** (string): Default = "AWAY_ODDS". The column name in the dataframe for the odds of the away team winning.</span>
+* <span style="color:#000000">**win\_loss\_column\_name** (string): Default = "HOME\_TEAM\_WIN/LOSS\_ODDS". The column name in the dataframe showing the result of the game from the perspective of the home team - 'W' or 'L'.</span>
+
 
 > ## <a name="backtesting.betting"><span style="color:#404040"> betting</span></a>
 
@@ -719,6 +787,35 @@ win_percentage_moving_avg(df, len_moving_avg)
 >* <span style="color:#000000">**len\_moving_avg** (int): specified the number of games the user wants to calculate a win percentage for, prior to the current game.
 
 >## <a name="dataCollection.scrapers"><span style="color:#404040">scrapers</span></a>
+
+>#### <a name = "fivethirtyeight_game_scraper"> <span style="color:#0052cc"> fivethirtyeight\_game\_scraper</span></a> 
+
+>```Python
+fivethirtyeight_game_scraper(binary_filepath, chrome_app_filepath, season_end_year)
+```
+><span style="color:#000000">Scrapes completed games, regular season and playoffs, from the 2017/2018 season through to the current season from [fivethirtyeight](https://fivethirtyeight.com). It scrapes the different models' predictions on the points spread and win probability for each team in a game. The model's used are proprietary models from *fivethirtyeight* based around RAPTOR (most recent), ELO, and CARMELO (more advanced ELO). RAPTOR should provide the most robust predictions from the 3 models in theory, as it is the most recent and accounts for the most factors in a team's likelihood to win. Returns a very specific set of lists to be deciphered by the [fivethirtyeight\_winner\_and\_spread\_accuracy](#fivethirtyeight_winner_and_spread_accuracy) function. In most seasons, *fivethirtyeight* gives the option to display win probabilities/spreads for two different kinds of models, generally the more recent one is displayed by default, giving the option to view the older model as well. We refer to the default, and most recent model for each season, as the "advanced" model, and the older one as "basic".
+  
+><span style="color:#000000">Returns:
+
+>* <span style="color:#000000">**match\_date\_list** (list): list of the dates of each game in the inputted season
+* <span style="color:#000000">**advanced\_pred\_name** (string): the name of the more advanced model predictions for the inputted season. (RAPTOR > CARMELO > ELO)
+* <span style="color:#000000">**basic\_pred\_name** (string): the name of the basic model predictions for the inputted season. (RAPTOR > CARMELO > ELO)
+* <span style="color:#000000">**advanced\_home\_win\_prob** (list): the win probability of the home team in each game, based on the more advanced model.
+* <span style="color:#000000">**advanced\_away\_win\_prob** (list): the win probability of the away team in each game, based on the more advanced model.
+* <span style="color:#000000">**advanced\_home\_spread\_pred** (list): the predicted points spread in each game from the perspective of the home team, based on the more advanced model.
+* <span style="color:#000000">**basic\_home\_win\_prob** (list): the win probability of the home team in each game, based on the basic model.
+* <span style="color:#000000">**basic\_away\_win\_prob** (list): the win probability of the away team in each game, based on the basic model.
+* <span style="color:#000000">**basic\_home\_spread\_pred** (list): the predicted points spread in each game from the perspective of the home team, based on the basic model.
+* <span style="color:#000000">**match\_home\_team\_list** (list): the name of the home team in each matchup.
+* <span style="color:#000000">**match\_away\_team\_list** (list): the name of the away team in each matchup.
+* <span style="color:#000000">**match\_home\_team\_pts\_list** (list): number of points scored by the home team in each matchup.
+* <span style="color:#000000">**match\_away\_team\_pts\_list** (list): number of points scored by the away team in each matchup.
+  
+><span style="color:#000000">Parameters:  
+  
+>* <span style="color:#000000">**binary\_filepath** (string): the filepath to your binary chromedriver executable.
+* <span style="color:#000000">**chrome\_app\_filepath** (string): the filepath to your google chrome app.
+* <span style="color:#000000">**season\_end\_year** (int): the end year for the season the user would like to scrape (e.g., 2018 for the 2017/2018 NBA season)
 
 >#### <a name = "get_game_lineup"> <span style="color:#0052cc"> get\_game\_lineup </span></a> 
 
